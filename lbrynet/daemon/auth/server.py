@@ -1,6 +1,6 @@
 import logging
 import urlparse
-import json
+import simplejson
 import inspect
 
 from decimal import Decimal
@@ -77,10 +77,6 @@ class JSONRPCError(object):
     def create_from_exception(cls, exception, code=CODE_APPLICATION_ERROR, traceback=None):
         return cls(exception.message, code=code, traceback=traceback)
 
-def default_decimal(obj):
-    if isinstance(obj, Decimal):
-        return float(obj)
-
 class UnknownAPIMethodError(Exception):
     pass
 
@@ -102,8 +98,8 @@ def jsonrpc_dumps(obj, id_):
         data = {"jsonrpc": "2.0", "error": obj.to_dict(), "id": id_}
     else:
         data = {"jsonrpc": "2.0", "result": obj, "id": id_}
-    return json.dumps(data, cls=jsonrpclib.JSONRPCEncoder, sort_keys=True, indent=2,
-                      separators=(',', ': '), default=default_decimal) + "\n"
+    return simplejson.dumps(data, sort_keys=True, indent=2,
+                      separators=(',', ': '), use_decimal=True) + "\n"
 
 def jsonrpc_loads(obj):
     return jsonrpclib.loads(obj, parse_float=Decimal)
